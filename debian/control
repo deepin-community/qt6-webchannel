@@ -1,0 +1,74 @@
+Source: qt6-webchannel
+Section: libs
+Priority: optional
+Maintainer: Deepin Developer <deepin-dev@deepin.org>
+Uploaders: Deepin Packages Builder <packages@deepin.org>
+Build-Depends: cmake (>= 3.18~),
+               debhelper-compat (= 13),
+               libgl-dev,
+               libqt6opengl6-dev (>= 6.2.4~),
+               libqt6websockets6-dev (>= 6.2.4~),
+               libssl-dev,
+               libvulkan-dev [linux-any],
+               libxcb-xkb-dev,
+               ninja-build,
+               pkg-config,
+               pkg-kde-tools,
+               qt6-base-dev (>= 6.2.4~),
+               qt6-base-private-dev (>= 6.2.4~),
+               qt6-declarative-dev (>= 6.2.4~),
+Standards-Version: 4.6.0
+Homepage: https://www.qt.io/developers/
+Rules-Requires-Root: no
+
+Package: libqt6webchannel6
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Qt 6 WebChannel library
+ Qt is a cross-platform C++ application framework. Qt's primary feature
+ is its rich set of widgets that provide standard GUI functionality.
+ .
+ Qt WebChannel enables peer-to-peer communication between the host (QML/C++
+ application) and the client (HTML/JavaScript application). The transport
+ mechanism is supported out of the box by the two popular web engines, Qt
+ WebKit 2 and Qt WebEngine.
+ .
+ This package contains the Qt 6 WebChannel libraries.
+
+Package: qml6-module-qtwebchannel
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Qt 6 WebChannel QML module
+ Qt is a cross-platform C++ application framework. Qt's primary feature
+ is its rich set of widgets that provide standard GUI functionality.
+ .
+ Qt WebChannel enables peer-to-peer communication between the host (QML/C++
+ application) and the client (HTML/JavaScript application). The transport
+ mechanism is supported out of the box by the two popular web engines, Qt
+ WebKit 2 and Qt WebEngine.
+ .
+ This package contains the Qt WebChannel QML module.
+
+Package: libqt6webchannel6-dev
+Architecture: any
+Multi-Arch: same
+Section: libdevel
+Depends: libqt6webchannel6 (= ${binary:Version}),
+         qt6-base-dev,
+         qt6-declarative-dev,
+         ${misc:Depends},
+Description: Qt 6 WebChannel library - development files
+ Qt is a cross-platform C++ application framework. Qt's primary feature
+ is its rich set of widgets that provide standard GUI functionality.
+ .
+ Qt WebChannel enables peer-to-peer communication between the host (QML/C++
+ application) and the client (HTML/JavaScript application). The transport
+ mechanism is supported out of the box by the two popular web engines, Qt
+ WebKit 2 and Qt WebEngine.
+ .
+ This package contains the development files needed to build Qt 6 applications
+ using the QtWebChannel library.
