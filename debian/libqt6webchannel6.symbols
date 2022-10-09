@@ -1,4 +1,4 @@
-# SymbolsHelper-Confirmed: 6.2.4 amd64
+# SymbolsHelper-Confirmed: 6.2.4 amd64 arm64
 libQt6WebChannel.so.6 libqt6webchannel6 #MINVER#
 * Build-Depends-Package: libqt6webchannel6-dev
  _ZN11QWebChannel11qt_metacallEN11QMetaObject4CallEiPPv@Base 6.2.1
@@ -112,6 +112,7 @@ libQt6WebChannel.so.6 libqt6webchannel6 #MINVER#
  _ZNK20QMetaObjectPublisher12blockUpdatesEv@Base 6.2.1
  _ZNK20QMetaObjectPublisher12unwrapObjectERK7QString@Base 6.2.1
  _ZNK20QMetaObjectPublisher13unwrapVariantERK8QVariant@Base 6.2.1
+ _ZNK20QMetaObjectPublisher14PropertyUpdate15propertyIndicesERK5QHashIi4QSetIiEE@Base 6.2.4
  _ZNK20QMetaObjectPublisher15conversionScoreERK10QJsonValuei@Base 6.2.1
  _ZNK20QMetaObjectPublisher16broadcastMessageERK11QJsonObject@Base 6.2.1
  _ZNK20QMetaObjectPublisher19deleteWrappedObjectEP7QObject@Base 6.2.1
@@ -123,9 +124,7 @@ libQt6WebChannel.so.6 libqt6webchannel6 #MINVER#
  _ZNK28QWebChannelAbstractTransport10metaObjectEv@Base 6.2.1
  (optional=templinst)_ZNKSt8_Rb_treeI7QStringSt4pairIKS0_8QVariantESt10_Select1stIS4_ESt4lessIS0_ESaIS4_EE4findERS2_@Base 6.2.1
  (optional=templinst)_ZNSt8_Rb_treeI7QStringSt4pairIKS0_8QVariantESt10_Select1stIS4_ESt4lessIS0_ESaIS4_EE24_M_get_insert_unique_posERS2_@Base 6.2.1
- (optional=templinst|arch=amd64)_ZNSt8_Rb_treeI7QStringSt4pairIKS0_8QVariantESt10_Select1stIS4_ESt4lessIS0_ESaIS4_EE29_M_get_insert_hint_unique_posESt23_Rb_tree_const_iteratorIS4_ERS2_@Base 6.2.2
- (optional=templinst)_ZNSt8_Rb_treeI7QStringSt4pairIKS0_8QVariantESt10_Select1stIS4_ESt4lessIS0_ESaIS4_EE7_M_copyINSA_11_Alloc_nodeEEEPSt13_Rb_tree_nodeIS4_EPKSE_PSt18_Rb_tree_node_baseRT_@Base 6.2.4
- (optional=templinst)_ZNSt8_Rb_treeI7QStringSt4pairIKS0_8QVariantESt10_Select1stIS4_ESt4lessIS0_ESaIS4_EE8_M_eraseEPSt13_Rb_tree_nodeIS4_E@Base 6.2.4
+ (optional=templinst)_ZNSt8_Rb_treeI7QStringSt4pairIKS0_8QVariantESt10_Select1stIS4_ESt4lessIS0_ESaIS4_EE29_M_get_insert_hint_unique_posESt23_Rb_tree_const_iteratorIS4_ERS2_@Base 6.2.2
  _ZTI11QWebChannel@Base 6.2.1
  _ZTI14QQmlWebChannel@Base 6.2.1
  _ZTI18QWebChannelPrivate@Base 6.2.1
