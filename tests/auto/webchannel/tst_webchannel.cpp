@@ -1,31 +1,6 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Milian Wolff <milian.wolff@kdab.com>
-** Copyright (C) 2019 Menlo Systems GmbH, author Arno Rehn <a.rehn@menlosystems.com>
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebChannel module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:GPL-EXCEPT$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3 as published by the Free Software
-** Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Milian Wolff <milian.wolff@kdab.com>
+// Copyright (C) 2019 Menlo Systems GmbH, author Arno Rehn <a.rehn@menlosystems.com>
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include "tst_webchannel.h"
 
@@ -36,6 +11,13 @@
 #include <QtTest>
 #ifdef WEBCHANNEL_TESTS_CAN_USE_JS_ENGINE
 #include <QJSEngine>
+#endif
+
+#include <QPromise>
+#include <QTimer>
+
+#ifdef WEBCHANNEL_TESTS_CAN_USE_CONCURRENT
+#include <QtConcurrent>
 #endif
 
 QT_USE_NAMESPACE
@@ -197,6 +179,59 @@ QVariantList convert_to_js(const TestStructVector &list)
     return ret;
 }
 }
+
+#if QT_CONFIG(future)
+QFuture<int> TestObject::futureIntResult() const
+{
+    return QtFuture::makeReadyFuture(42);
+}
+
+QFuture<int> TestObject::futureDelayedIntResult() const
+{
+    QPromise<int> p;
+    const auto f = p.future();
+    p.start();
+    QTimer::singleShot(10, this, [p=std::move(p)]() mutable {
+        p.addResult(7);
+        p.finish();
+    });
+    return f;
+}
+
+#ifdef WEBCHANNEL_TESTS_CAN_USE_CONCURRENT
+QFuture<int> TestObject::futureIntResultFromThread() const
+{
+    return QtConcurrent::run([] {
+        return 1337;
+    });
+}
+#endif
+
+QFuture<void> TestObject::futureVoidResult() const
+{
+    return QtFuture::makeReadyFuture();
+}
+
+QFuture<QString> TestObject::futureStringResult() const
+{
+    return QtFuture::makeReadyFuture<QString>("foo");
+}
+
+QFuture<int> TestObject::cancelledFuture() const
+{
+    QPromise<int> p;
+    auto f = p.future();
+    p.start();
+    f.cancel();
+    Q_ASSERT(f.isCanceled());
+    return f;
+}
+
+QFuture<int> TestObject::failedFuture() const
+{
+    return QtFuture::makeExceptionalFuture<int>(QException{});
+}
+#endif
 
 TestWebChannel::TestWebChannel(QObject *parent)
     : QObject(parent)
@@ -412,6 +447,17 @@ void TestWebChannel::testInfoForObject()
         addMethod(QStringLiteral("bindStringPropertyToStringProperty2"), "bindStringPropertyToStringProperty2()");
         addMethod(QStringLiteral("setStringProperty2"), "setStringProperty2(QString)");
         addMethod(QStringLiteral("method1"), "method1()");
+#if QT_CONFIG(future)
+        addMethod(QStringLiteral("futureIntResult"), "futureIntResult()");
+        addMethod(QStringLiteral("futureDelayedIntResult"), "futureDelayedIntResult()");
+#ifdef WEBCHANNEL_TESTS_CAN_USE_CONCURRENT
+        addMethod(QStringLiteral("futureIntResultFromThread"), "futureIntResultFromThread()");
+#endif
+        addMethod(QStringLiteral("futureVoidResult"), "futureVoidResult()");
+        addMethod(QStringLiteral("futureStringResult"), "futureStringResult()");
+        addMethod(QStringLiteral("cancelledFuture"), "cancelledFuture()");
+        addMethod(QStringLiteral("failedFuture"), "failedFuture()");
+#endif
         QCOMPARE(info["methods"].toArray(), expected);
     }
 
@@ -951,7 +997,7 @@ void TestWebChannel::testWrapObjectWithMultipleTransports()
     pub->wrapResult(QVariant::fromValue(&obj), dummyTransport);
     pub->wrapResult(QVariant::fromValue(&obj), dummyTransport2);
 
-    QCOMPARE(pub->transportedWrappedObjects.count(), 2);
+    QCOMPARE(pub->transportedWrappedObjects.size(), 2);
 }
 
 void TestWebChannel::testJsonToVariant()
@@ -1309,6 +1355,48 @@ void TestWebChannel::testDeletionDuringMethodInvocation()
         QCOMPARE(transport->messagesSent().size(), deleteChannel ? 0 : 1);
 }
 
+#if QT_CONFIG(future)
+void TestWebChannel::testAsyncMethodReturningFuture_data()
+{
+    QTest::addColumn<QString>("methodName");
+    QTest::addColumn<QJsonValue>("result");
+
+    QTest::addRow("int") << "futureIntResult" << QJsonValue{42};
+    QTest::addRow("int-delayed") << "futureDelayedIntResult" << QJsonValue{7};
+#ifdef WEBCHANNEL_TESTS_CAN_USE_CONCURRENT
+    QTest::addRow("int-thread") << "futureIntResultFromThread" << QJsonValue{1337};
+#endif
+    QTest::addRow("void") << "futureVoidResult" << QJsonValue{};
+    QTest::addRow("QString") << "futureStringResult" << QJsonValue{"foo"};
+
+    QTest::addRow("cancelled") << "cancelledFuture" << QJsonValue{};
+    QTest::addRow("failed")    << "failedFuture"    << QJsonValue{};
+}
+
+void TestWebChannel::testAsyncMethodReturningFuture()
+{
+    QFETCH(QString, methodName);
+    QFETCH(QJsonValue, result);
+
+    QWebChannel channel;
+    TestObject obj;
+    channel.registerObject("testObject", &obj);
+
+    DummyTransport transport;
+    channel.connectTo(&transport);
+
+    transport.emitMessageReceived({
+        {"type", TypeInvokeMethod},
+        {"object", "testObject"},
+        {"method", methodName},
+        {"id", 1}
+    });
+
+    QTRY_COMPARE(transport.messagesSent().size(), 1);
+    QCOMPARE(transport.messagesSent().first().value("data"), result);
+}
+#endif
+
 static QHash<QString, QObject*> createObjects(QObject *parent)
 {
     const int num = 100;
@@ -1471,9 +1559,9 @@ void TestWebChannel::qtbug46548_overriddenProperties()
     QSignalSpy spy(&engine, &TestJSEngine::channelSetupReady);
     connect(&engine, &TestJSEngine::channelSetupReady, TestSubclassedFunctor(&engine));
     engine.initWebChannelJS();
-    if (!spy.count())
+    if (!spy.size())
         spy.wait();
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QJSValue subclassedTestObject = engine.evaluate("channel.objects[\"subclassedTestObject\"]");
     QVERIFY(subclassedTestObject.isObject());
 

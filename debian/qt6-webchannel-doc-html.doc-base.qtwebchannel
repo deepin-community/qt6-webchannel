@@ -1,0 +1,9 @@
+Document: qt6-webchannel-manual
+Title: Qt 6 WebChannel
+Author: The Qt Company Ltd
+Abstract: This is the HTML documentation for Qt 6 WebChannel
+Section: Programming/C++
+
+Format: HTML
+Index: /usr/share/doc/qt6-webchannel-doc-html/html/qtwebchannel/qtwebchannel-index.html
+Files: /usr/share/doc/qt6-webchannel-doc-html/html/qtwebchannel/*.html
