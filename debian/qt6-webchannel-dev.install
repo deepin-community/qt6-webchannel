@@ -5,6 +5,7 @@ usr/include/${DEB_HOST_MULTIARCH}/qt6/QtWebChannel/QtWebChannel
 usr/include/${DEB_HOST_MULTIARCH}/qt6/QtWebChannel/QtWebChannelDepends
 usr/include/${DEB_HOST_MULTIARCH}/qt6/QtWebChannel/QtWebChannelVersion
 usr/include/${DEB_HOST_MULTIARCH}/qt6/QtWebChannel/qqmlwebchannel.h
+usr/include/${DEB_HOST_MULTIARCH}/qt6/QtWebChannel/qtwebchannelexports.h
 usr/include/${DEB_HOST_MULTIARCH}/qt6/QtWebChannel/qtwebchannelversion.h
 usr/include/${DEB_HOST_MULTIARCH}/qt6/QtWebChannel/qwebchannel.h
 usr/include/${DEB_HOST_MULTIARCH}/qt6/QtWebChannel/qwebchannelabstracttransport.h
@@ -21,5 +22,6 @@ usr/lib/${DEB_HOST_MULTIARCH}/cmake/Qt6WebChannel/Qt6WebChannelVersionlessTarget
 usr/lib/${DEB_HOST_MULTIARCH}/libQt6WebChannel.prl
 usr/lib/${DEB_HOST_MULTIARCH}/libQt6WebChannel.so
 usr/lib/${DEB_HOST_MULTIARCH}/metatypes/qt6webchannel_none_metatypes.json
+usr/lib/${DEB_HOST_MULTIARCH}/pkgconfig/Qt6WebChannel.pc
 usr/lib/${DEB_HOST_MULTIARCH}/qt6/mkspecs/modules/qt_lib_webchannel.pri
 usr/share/qt6/modules/WebChannel.json

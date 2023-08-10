@@ -1,42 +1,6 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Milian Wolff <milian.wolff@kdab.com>
-** Copyright (C) 2019 Menlo Systems GmbH, author Arno Rehn <a.rehn@menlosystems.com>
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the QtWebChannel module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL3 included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or (at your option) the GNU General
-** Public license version 3 or any later version approved by the KDE Free
-** Qt Foundation. The licenses are as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-2.0.html and
-** https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Milian Wolff <milian.wolff@kdab.com>
+// Copyright (C) 2019 Menlo Systems GmbH, author Arno Rehn <a.rehn@menlosystems.com>
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qmetaobjectpublisher_p.h"
 #include "qwebchannel.h"
@@ -44,6 +8,9 @@
 #include "qwebchannelabstracttransport.h"
 
 #include <QEvent>
+#if QT_CONFIG(future)
+#include <QFuture>
+#endif
 #include <QJsonDocument>
 #include <QDebug>
 #include <QJsonObject>
@@ -177,9 +144,83 @@ QJsonObject createResponse(const QJsonValue &id, const QJsonValue &data)
     return response;
 }
 
+#if QT_CONFIG(future)
+QMetaType resultTypeOfQFuture(QByteArrayView typeName)
+{
+    if (!typeName.startsWith("QFuture<") || !typeName.endsWith('>'))
+        return {};
+
+    return QMetaType::fromName(typeName.sliced(8, typeName.size() - 9));
 }
 
-Q_DECLARE_TYPEINFO(OverloadResolutionCandidate, Q_MOVABLE_TYPE);
+template<typename Func>
+void attachContinuationToFutureInVariant(const QVariant &result, QPointer<QObject> contextObject,
+                                         Func continuation)
+{
+    Q_ASSERT(result.canConvert<QFuture<void>>());
+
+    // QMetaObject::invokeMethod() indirection to work around an issue with passing
+    // a context object to QFuture::then(). See below.
+    const auto safeContinuation = [contextObject, continuation=std::move(continuation)]
+            (const QVariant &result)
+    {
+        if (!contextObject)
+            return;
+
+        QMetaObject::invokeMethod(contextObject.get(), [continuation, result] {
+            continuation(result);
+        });
+    };
+
+    auto f = result.value<QFuture<void>>();
+
+    // Be explicit about what we capture so that we don't accidentally run into
+    // threading issues.
+    f.then([resultType=resultTypeOfQFuture(result.typeName()), f, continuation=safeContinuation]
+    {
+        if (!resultType.isValid() || resultType == QMetaType::fromType<void>()) {
+            continuation(QVariant{});
+            return;
+        }
+
+        auto iface = QFutureInterfaceBase::get(f);
+        // If we pass a context object to f.then() and the future originates in a
+        // different thread, this assertions fails. Why?
+        // For the time being, work around that with QMetaObject::invokeMethod()
+        // in safeSendResponse().
+        Q_ASSERT(iface.resultCount() > 0);
+
+        QMutexLocker<QMutex> locker(&iface.mutex());
+        if (iface.resultStoreBase().resultAt(0).isVector()) {
+            locker.unlock();
+            // This won't work because we cannot generically get a QList<T> into
+            // a QVariant with T only known at runtime.
+            // TBH, I don't know how to trigger this.
+            qWarning() << "Result lists in a QFuture return value are not supported!";
+            continuation(QVariant{});
+            return;
+        }
+
+        // pointer<void>() wouldn't compile because of the isVector-codepath
+        // using QList<T> in that method. We're not taking that path anyway (see the
+        // above check), so we can use char instead to not break strict aliasing
+        // requirements.
+        const auto data = iface.resultStoreBase().resultAt(0).pointer<char>();
+        locker.unlock();
+
+        const QVariant result(resultType, data);
+        continuation(result);
+    }).onCanceled([continuation=safeContinuation] {
+        // Will catch both failure and cancellation.
+        // Maybe send something more meaningful?
+        continuation(QVariant{});
+    });
+}
+#endif
+
+}
+
+Q_DECLARE_TYPEINFO(OverloadResolutionCandidate, Q_RELOCATABLE_TYPE);
 
 void QWebChannelPropertyChangeNotifier::notify(
         QPropertyObserver *self, QUntypedPropertyData *)
@@ -259,7 +300,7 @@ QJsonObject QMetaObjectPublisher::classInfoForObject(const QObject *object, QWeb
             // optimize: compress the common propertyChanged notification names, just send a 1
             const QByteArray &notifySignal = prop.notifySignal().name();
             static const QByteArray changedSuffix = QByteArrayLiteral("Changed");
-            if (notifySignal.length() == changedSuffix.length() + propertyName.length() &&
+            if (notifySignal.size() == changedSuffix.size() + propertyName.size() &&
                 notifySignal.endsWith(changedSuffix) && notifySignal.startsWith(prop.name()))
             {
                 signalInfo.append(1);
@@ -844,7 +885,7 @@ QJsonValue QMetaObjectPublisher::wrapResult(const QVariant &result, QWebChannelA
                 if (oi.transports.isEmpty())
                     oi.transports = webChannel->d_func()->transports;
 
-                for (auto transport : qAsConst(oi.transports)) {
+                for (auto transport : std::as_const(oi.transports)) {
                     transportedWrappedObjects.insert(transport, id);
                 }
             }
@@ -1055,9 +1096,29 @@ void QMetaObjectPublisher::handleMessage(const QJsonObject &message, QWebChannel
                                       method.toInt(-1),
                                       message.value(KEY_ARGS).toArray());
             }
-            if (!publisherExists || !transportExists)
-                return;
-            transport->sendMessage(createResponse(message.value(KEY_ID), wrapResult(result, transport)));
+
+            auto sendResponse = [publisherExists, transportExists, id=message.value(KEY_ID)]
+                    (const QVariant &result)
+            {
+                if (!publisherExists || !transportExists)
+                    return;
+
+                Q_ASSERT(QThread::currentThread() == publisherExists->thread());
+
+                const auto wrappedResult =
+                        publisherExists->wrapResult(result, transportExists.get());
+                transportExists->sendMessage(createResponse(id, wrappedResult));
+            };
+
+#if QT_CONFIG(future)
+            if (result.canConvert<QFuture<void>>()) {
+                attachContinuationToFutureInVariant(result, publisherExists.get(), sendResponse);
+            } else {
+                sendResponse(result);
+            }
+#else
+            sendResponse(result);
+#endif
         } else if (type == TypeConnectToSignal) {
             signalHandlerFor(object)->connectTo(object, message.value(KEY_SIGNAL).toInt(-1));
         } else if (type == TypeDisconnectFromSignal) {
