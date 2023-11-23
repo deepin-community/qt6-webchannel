@@ -1,3 +1,30 @@
+qt6-webchannel (6.6.0-3) experimental; urgency=medium
+
+  [ Patrick Franz ]
+  * Add missing dependency of libqt6webchannelquick6 to qt6-webchannel-
+    dev.
+
+ -- Patrick Franz <deltaone@debian.org>  Wed, 15 Nov 2023 22:49:12 +0100
+
+qt6-webchannel (6.6.0-2) experimental; urgency=medium
+
+  [ Patrick Franz ]
+  * Update symbols from buildlogs.
+
+ -- Patrick Franz <deltaone@debian.org>  Wed, 15 Nov 2023 18:09:00 +0100
+
+qt6-webchannel (6.6.0-1) experimental; urgency=medium
+
+  [ Patrick Franz ]
+  * New upstream release (6.6.0).
+  * Bump Qt B-Ds to 6.6.0.
+  * Update list of installed files and new binary package
+    libqt6webchannelquick6.
+  * Update symbols from buildlogs.
+  * Update d/copyright.
+
+ -- Patrick Franz <deltaone@debian.org>  Wed, 15 Nov 2023 00:13:25 +0100
+
 qt6-webchannel (6.4.2-3) unstable; urgency=medium
 
   [ Patrick Franz ]

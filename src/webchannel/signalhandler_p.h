@@ -1,8 +1,8 @@
 // Copyright (C) 2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Milian Wolff <milian.wolff@kdab.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef SIGNALHANDLER_H
-#define SIGNALHANDLER_H
+#ifndef QTWEBCHANNEL_SIGNALHANDLER_P_H
+#define QTWEBCHANNEL_SIGNALHANDLER_P_H
 
 //
 //  W A R N I N G
@@ -21,7 +21,6 @@
 #include <QMetaMethod>
 #include <QDebug>
 #include <QThread>
-#include <private/qglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -264,14 +263,14 @@ void SignalHandler<Receiver>::clear()
 template<class Receiver>
 void SignalHandler<Receiver>::remove(const QObject *object)
 {
-    Q_ASSERT(m_connectionsCounter.contains(object));
-    const SignalConnectionHash &connections = m_connectionsCounter.value(object);
-    foreach (const ConnectionPair &connection, connections) {
+    auto it = m_connectionsCounter.find(object);
+    Q_ASSERT(it != m_connectionsCounter.cend());
+    const SignalConnectionHash connections = std::move(it.value());
+    m_connectionsCounter.erase(it);
+    for (const ConnectionPair &connection : connections)
         QObject::disconnect(connection.first);
-    }
-    m_connectionsCounter.remove(object);
 }
 
 QT_END_NAMESPACE
 
-#endif // SIGNALHANDLER_H
+#endif // QTWEBCHANNEL_SIGNALHANDLER_P_H

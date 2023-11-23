@@ -2,7 +2,7 @@ Source: qt6-webchannel
 Section: libs
 Priority: optional
 Maintainer: Debian Qt/KDE Maintainers <debian-qt-kde@lists.debian.org>
-Uploaders: Patrick Franz <deltaone@debian.org>
+Uploaders: Patrick Franz <deltaone@debian.org>,
 Build-Depends: cmake (>= 3.24~),
                debhelper-compat (= 13),
                libgl-dev,
@@ -12,12 +12,12 @@ Build-Depends: cmake (>= 3.24~),
                ninja-build,
                pkg-config,
                pkg-kde-tools,
-               qt6-base-dev (>= 6.4.2+dfsg~),
-               qt6-base-private-dev (>= 6.4.2+dfsg~),
-               qt6-declarative-dev (>= 6.4.2+dfsg~),
-               qt6-websockets-dev (>= 6.4.2~),
-Build-Depends-Indep: qt6-base-dev (>= 6.4~) <!nodoc>,
-                     qt6-documentation-tools (>= 6.4~) <!nodoc>,
+               qt6-base-dev (>= 6.6.0+dfsg~),
+               qt6-base-private-dev (>= 6.6.0+dfsg~),
+               qt6-declarative-dev (>= 6.6.0+dfsg~),
+               qt6-websockets-dev (>= 6.6.0~),
+Build-Depends-Indep: qt6-base-dev (>= 6.6~) <!nodoc>,
+                     qt6-documentation-tools (>= 6.6~) <!nodoc>,
 Standards-Version: 4.6.2
 Homepage: https://www.qt.io/developers/
 Vcs-Browser: https://salsa.debian.org/qt-kde-team/qt6/qt6-webchannel
@@ -27,8 +27,8 @@ Rules-Requires-Root: no
 Package: libqt6webchannel6
 Architecture: any
 Multi-Arch: same
-Pre-Depends: ${misc:Pre-Depends}
-Depends: ${misc:Depends}, ${shlibs:Depends}
+Pre-Depends: ${misc:Pre-Depends},
+Depends: ${misc:Depends}, ${shlibs:Depends},
 Description: Qt 6 WebChannel library
  Qt is a cross-platform C++ application framework. Qt's primary feature
  is its rich set of widgets that provide standard GUI functionality.
@@ -38,13 +38,29 @@ Description: Qt 6 WebChannel library
  mechanism is supported out of the box by the two popular web engines, Qt
  WebKit 2 and Qt WebEngine.
  .
- This package contains the Qt 6 WebChannel libraries.
+ This package contains the Qt 6 WebChannel library.
+
+Package: libqt6webchannelquick6
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends},
+Depends: ${misc:Depends}, ${shlibs:Depends},
+Description: Qt 6 WebChannel Quick library
+ Qt is a cross-platform C++ application framework. Qt's primary feature
+ is its rich set of widgets that provide standard GUI functionality.
+ .
+ Qt WebChannel enables peer-to-peer communication between the host (QML/C++
+ application) and the client (HTML/JavaScript application). The transport
+ mechanism is supported out of the box by the two popular web engines, Qt
+ WebKit 2 and Qt WebEngine.
+ .
+ This package contains the Qt 6 WebChannel Quick library.
 
 Package: qml6-module-qtwebchannel
 Architecture: any
 Multi-Arch: same
-Pre-Depends: ${misc:Pre-Depends}
-Depends: ${misc:Depends}, ${shlibs:Depends}
+Pre-Depends: ${misc:Pre-Depends},
+Depends: ${misc:Depends}, ${shlibs:Depends},
 Description: Qt 6 WebChannel QML module
  Qt is a cross-platform C++ application framework. Qt's primary feature
  is its rich set of widgets that provide standard GUI functionality.
@@ -57,16 +73,17 @@ Description: Qt 6 WebChannel QML module
  This package contains the Qt WebChannel QML module.
 
 Package: qt6-webchannel-dev
-Provides: libqt6webchannel6-dev (= ${binary:Version})
+Provides: libqt6webchannel6-dev (= ${binary:Version}),
 Architecture: any
 Multi-Arch: same
 Section: libdevel
 Depends: libqt6webchannel6 (= ${binary:Version}),
+         libqt6webchannelquick6 (= ${binary:Version}),
          qt6-base-dev,
          qt6-declarative-dev,
          ${misc:Depends},
-Breaks: libqt6webchannel6-dev (<< 6.4.1-2~)
-Replaces: libqt6webchannel6-dev (<< 6.4.1-2~)
+Breaks: libqt6webchannel6-dev (<< 6.4.1-2~),
+Replaces: libqt6webchannel6-dev (<< 6.4.1-2~),
 Description: Qt 6 WebChannel library - development files
  Qt is a cross-platform C++ application framework. Qt's primary feature
  is its rich set of widgets that provide standard GUI functionality.
