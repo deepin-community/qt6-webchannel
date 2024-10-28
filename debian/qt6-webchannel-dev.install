@@ -25,6 +25,7 @@ usr/lib/${DEB_HOST_MULTIARCH}/cmake/Qt6WebChannel/Qt6WebChannelDependencies.cmak
 usr/lib/${DEB_HOST_MULTIARCH}/cmake/Qt6WebChannel/Qt6WebChannelTargets-none.cmake
 usr/lib/${DEB_HOST_MULTIARCH}/cmake/Qt6WebChannel/Qt6WebChannelTargets.cmake
 usr/lib/${DEB_HOST_MULTIARCH}/cmake/Qt6WebChannel/Qt6WebChannelVersionlessTargets.cmake
+usr/lib/${DEB_HOST_MULTIARCH}/cmake/Qt6WebChannel/*.cmake
 usr/lib/${DEB_HOST_MULTIARCH}/cmake/Qt6WebChannelQuick/Qt6WebChannelQuickAdditionalTargetInfo.cmake
 usr/lib/${DEB_HOST_MULTIARCH}/cmake/Qt6WebChannelQuick/Qt6WebChannelQuickConfig.cmake
 usr/lib/${DEB_HOST_MULTIARCH}/cmake/Qt6WebChannelQuick/Qt6WebChannelQuickConfigVersion.cmake
@@ -33,6 +34,7 @@ usr/lib/${DEB_HOST_MULTIARCH}/cmake/Qt6WebChannelQuick/Qt6WebChannelQuickDepende
 usr/lib/${DEB_HOST_MULTIARCH}/cmake/Qt6WebChannelQuick/Qt6WebChannelQuickTargets-none.cmake
 usr/lib/${DEB_HOST_MULTIARCH}/cmake/Qt6WebChannelQuick/Qt6WebChannelQuickTargets.cmake
 usr/lib/${DEB_HOST_MULTIARCH}/cmake/Qt6WebChannelQuick/Qt6WebChannelQuickVersionlessTargets.cmake
+usr/lib/${DEB_HOST_MULTIARCH}/cmake/Qt6WebChannelQuick/*.cmake
 usr/lib/${DEB_HOST_MULTIARCH}/libQt6WebChannel.prl
 usr/lib/${DEB_HOST_MULTIARCH}/libQt6WebChannel.so
 usr/lib/${DEB_HOST_MULTIARCH}/libQt6WebChannelQuick.prl
